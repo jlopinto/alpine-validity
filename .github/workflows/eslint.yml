@@ -1,0 +1,11 @@
+name: eslint
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install modules
+      run: yarn
+    - name: Run ESLint
+      run: node_modules/.bin/eslint src/ --ext .js

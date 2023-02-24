@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
+  <script type="module">
+    import validityDirective from "./dist/alpine-validity.js"
+
+    document.addEventListener("alpine:initializing", () => {
+      validityDirective(window.Alpine)
+    })
+  </script>
+  <script src="//unpkg.com/alpinejs" defer></script>
+  <script>
+    const isMoreThan2 = (value) => {
+      return value.length > 2
+    }
+  </script>
+</head>
+
+<body>
+  <main class="container">
+    <ins id="alpine-loaded" x-data x-text="'alpine-loaded'"></ins>
+    <article>
+      <h2>form 1</h2>
+      <form id="form-1" x-validity x-data="{isFormValid: false}" @validation="isFormValid = $el.checkValidity()"
+        @submit.prevent>
+        <div x-data="{error:''}" @validation="error = $event.detail.error">
+          <input type="text" required />
+          <small class="errorMessage" x-text="error"></small>
+        </div>
+        <button>submit</button>
+      </form>
+    </article>
+    <article>
+      <h2>form 2</h2>
+      <form id="form-2" x-validity x-data="{isFormValid: false}" @validation="isFormValid = $el.checkValidity()"
+        x-validity:messages="{valueMissing: 'valueMissing custom'}" @submit.prevent>
+        <div x-data="{error:''}" @validation="error = $event.detail.error">
+          <input type="text" required />
+          <small class="errorMessage" x-text="error"></small>
+        </div>
+        <button>submit</button>
+      </form>
+    </article>
+    <article>
+      <h1>form 3</h1>
+
+      <form id="form-3" x-validity x-data="{isFormValid: false}"
+        x-validity:messages="{valueMissing: 'valueMissing custom'}" @validation="isFormValid = $el.checkValidity()"
+        @submit.prevent>
+        <div x-data="{error:''}" @validation="error = $event.detail.error">
+          <input type="text" required x-validity:messages="{isMoreThan2: 'custom error'}"
+            x-validity:controls="[isMoreThan2]" />
+          <small class="errorMessage" x-text="error"></small>
+        </div>
+        <button>submit</button>
+      </form>
+    </article>
+
+    <article>
+      <h2>form 4</h2>
+      <div x-data="{
+	          forms: [{id: $id('form'), name: 'roger', email: 'roger@email.com'}], 
+	          add(data) {this.forms = [...this.forms, data]}, 
+	          remove(index) { this.forms = [...this.forms.filter((form) => index != form.id)]  } }">
+        <form @submit.prevent x-data="{isFormValid: false}" @validation="isFormValid = $event.detail.validity"
+          x-validity id="form-4">
+          <template x-for="(form, index) in forms" :key="form.id">
+            <div class="grid">
+              <div x-data="{error: ''}" @validation="error = $event.detail.error">
+                <input type="text" required id="name" :name="`name-${form.id}`" :value="form.name"
+                  :placeholder="`Name ${form.id}`" />
+                <small x-text="error"></small>
+              </div>
+              <div x-data="{error: ''}" @validation="error = $event.detail.error">
+                <input type="email" required id="email" :name="`email-${form.id}`" :value="form.email"
+                  :placeholder="`Email ${form.id}`" />
+                <small x-text="error"></small>
+              </div>
+              <button type="button" class="secondary" @click="() => remove(form.id)">
+                remove the <strong x-text="form.id"></strong>
+              </button>
+            </div>
+          </template>
+          <button type="button" @click="add({id: $id('form'), name: '', email: ''})">
+            add user
+          </button>
+          <hr />
+          <div>Number of form: <span x-text="forms.length"></span></div>
+          <hr />
+          <button type="submit">
+            Submit
+            <span x-text="!isFormValid ? 'invalid': ''"></span>
+          </button>
+          <small>on submit: check browser console</small>
+        </form>
+      </div>
+    </article>
+  </main>
+</body>
+
+</html>
