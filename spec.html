@@ -68,33 +68,32 @@
         <form @submit.prevent x-data="{isFormValid: false}" @validation="isFormValid = $event.detail.validity"
           x-validity id="form-4">
           <template x-for="(form, index) in forms" :key="form.id">
-            <div class="grid">
-              <div x-data="{error: ''}" @validation="error = $event.detail.error">
-                <input type="text" required id="name" :name="`name-${form.id}`" :value="form.name"
+            <div class="grid form-row">
+              <div x-data="{error: ''}" @validation="error = $event.detail.error" class="input-name">
+                <input type="text" required  :name="`name-${form.id}`" :value="form.name"
                   :placeholder="`Name ${form.id}`" />
-                <small x-text="error"></small>
+                <small class="errorMessage" x-text="error"></small>
               </div>
-              <div x-data="{error: ''}" @validation="error = $event.detail.error">
-                <input type="email" required id="email" :name="`email-${form.id}`" :value="form.email"
+              <div x-data="{error: ''}" @validation="error = $event.detail.error" class="input-mail">
+                <input type="email" required  :name="`email-${form.id}`" :value="form.email"
                   :placeholder="`Email ${form.id}`" />
-                <small x-text="error"></small>
+                <small class="errorMessage" x-text="error"></small>
               </div>
               <button type="button" class="secondary" @click="() => remove(form.id)">
                 remove the <strong x-text="form.id"></strong>
               </button>
             </div>
           </template>
-          <button type="button" @click="add({id: $id('form'), name: '', email: ''})">
+          <button type="button" class="add-btn" @click="add({id: $id('form'), name: '', email: ''})">
             add user
           </button>
           <hr />
-          <div>Number of form: <span x-text="forms.length"></span></div>
-          <hr />
           <button type="submit">
             Submit
-            <span x-text="!isFormValid ? 'invalid': ''"></span>
           </button>
           <small>on submit: check browser console</small>
+          <hr />
+          form validity: <span class="form-status" x-text="!isFormValid ? 'invalid': 'valid'"></span>
         </form>
       </div>
     </article>
