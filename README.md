@@ -4,8 +4,8 @@ Many forms require basic validation, and using native form validation can be suf
 
 The AlpineJS "validity" directive offers a solution to this issue by allowing you to display error messages in a clear and concise manner. This directive utilizes the native API to provide seamless integration with your existing form elements, making it an efficient and straightforward solution for client-side form validation.
 
-![npm bundle size (version)](https://img.shields.io/bundlephobia/min/@blo4r/x-validity/latest?style=flat)
-![dependency count](https://badgen.net/bundlephobia/dependency-count/@blo4r/x-validity)
+![npm bundle size (version)](https://img.shields.io/bundlephobia/min/@jlopinto/alpine-validity/latest?style=flat)
+![dependency count](https://badgen.net/bundlephobia/dependency-count/@jlopinto/alpine-validity)
 ![GitHub Workflow Status](https://github.com/jlopinto/x-validity/actions/workflows/main.yml/badge.svg)
 
 ## Installation
@@ -16,7 +16,7 @@ Include the following `<script>` tag in the `<head>` of your document, just befo
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@blo4r/x-validity@0.x.x/dist/alpine-validity.min.js"
+  src="https://cdn.jsdelivr.net/npm/@jlopinto/alpine-validity@0.x.x/dist/alpine-validity.min.js"
   defer
 ></script>
 ```
@@ -24,14 +24,14 @@ Include the following `<script>` tag in the `<head>` of your document, just befo
 ### NPM
 
 ```bash
-npm install @blo4r/x-validity
+npm install @jlopinto/alpine-validity
 ```
 
 Add the `x-validity` directive to your project by registering the plugin with Alpine.
 
 ```js
 import Alpine from "alpinejs"
-import { Validity } from "@blo4r/alpine-validity"
+import { Validity } from "@jlopinto/alpine-validity"
 
 Alpine.plugin(Validity)
 
