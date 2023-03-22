@@ -1,11 +1,9 @@
-name: test e2e
-on: [push]
+name: e2e - Chrome
+on: push
 jobs:
-  cypress-run:
+  chrome:
     runs-on: ubuntu-22.04
-    # Cypress Docker image with Chrome v106
-    # and Firefox v106 pre-installed
-    container: cypress/browsers:node18.12.0-chrome106-ff106
+    name: E2E on Chrome
     steps:
       - uses: actions/checkout@v3
       - uses: cypress-io/github-action@v5
