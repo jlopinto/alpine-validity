@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
   <script type="module">
-    import validityDirective from "./dist/alpine-validity.js"
+    import validityDirective from "./src/validity.js"
 
     document.addEventListener("alpine:initializing", () => {
       validityDirective(window.Alpine)
@@ -24,11 +24,11 @@
     <ins id="alpine-loaded" x-data x-text="'alpine-loaded'"></ins>
     <article>
       <h2>form 1</h2>
-      <form id="form-1" x-validity x-data="{isFormValid: false}" @validation="isFormValid = $el.checkValidity()"
+      <form id="form-1" x-validity x-data="{isFormValid: false}" _@validation="isFormValid = $el.checkValidity()"
         @submit.prevent>
-        <div x-data="{error:''}" @validation="error = $event.detail.error">
-          <input type="text" required />
-          <small class="errorMessage" x-text="error"></small>
+        <div>
+          <input type="text" id="test-field" required />
+          <small class="errorMessage" x-text="$validity('test-field')"></small>  
         </div>
         <button>submit</button>
       </form>
