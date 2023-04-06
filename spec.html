@@ -11,10 +11,28 @@
       validityDirective(window.Alpine)
     })
   </script>
-  <script src="//unpkg.com/alpinejs" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
   <script>
-    const isMoreThan2 = (value) => {
-      return value.length > 2
+    const isMoreThan5 = (value) => {
+      return value.length > 5
+    }
+
+    const notEmpty = (value) => {
+      return value.length > 0
+    }
+
+    const customMessagesRoot = {
+      isMoreThan5: ">5",
+      notEmpty: ">0",
+      valueMissing: "You forgot to enter your email address! - 1",
+      typeMismatch: "This appears to be an invalid email address. - 1"
+    }
+
+    const customMessages = {
+      isMoreThan5: ">5",
+      notEmpty: ">0",
+      valueMissing: "You forgot to enter your email address!",
+      typeMismatch: "This appears to be an invalid email address."
     }
   </script>
 </head>
@@ -47,13 +65,15 @@
     <article>
       <h1>form 3</h1>
 
-      <form id="form-3" x-validity x-data="{isFormValid: false}"
-        x-validity:messages="{valueMissing: 'valueMissing custom'}" @validation="isFormValid = $el.checkValidity()"
-        @submit.prevent>
-        <div x-data="{error:''}" @validation="error = $event.detail.error">
-          <input type="text" required x-validity:messages="{isMoreThan2: 'custom error'}"
-            x-validity:controls="[isMoreThan2]" />
-          <small class="errorMessage" x-text="error"></small>
+      <form id="form-3" x-data x-validity @submit.prevent x-validity:messages="customMessagesRoot">
+        <div>
+          <input type="email" id="test-field-2" x-validity:controls="[notEmpty, isMoreThan5]"
+            x-validity:messages="customMessages" />
+          <small class="errorMessage" x-text="$validity('test-field-2')"></small>
+        </div>
+        <div>
+          <input type="email" id="test-field-3" required x-validity:controls="[{isMoreThan5: 'custom error'}]" />
+          <small class="errorMessage" x-text="$validity('test-field-3')"></small>
         </div>
         <button>submit</button>
       </form>

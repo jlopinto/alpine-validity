@@ -4,11 +4,10 @@ const checkElementValidity = (target, form) => {
   const validityStates = target.validity
 
   /* retrieve messages and controls from the element or the parent form */
-  const messages = target._x_validity_messages || form._x_validity_messages || []
-  const controls = target._x_validity_controls || form._x_validity_controls || []
+  const messages = target.__messages || form.__messages || []
+  const controls = target.__controls || form.__controls || []
 
-  let validationFailed = false
-  let errorMessage
+  let errorMessage = false
 
   /* reset the input validity['customError'] state to false */
   target.setCustomValidity('')
@@ -16,17 +15,15 @@ const checkElementValidity = (target, form) => {
   /* First, checks for native errors */
   for (const state in validityStates) {
     if (!['valid', 'customError'].includes(state) && validityStates[state] === true) {
-      validationFailed = true
       errorMessage = messages[state] || target.validationMessage
       break
     }
   }
 
   /* then if no native errors found, check for custom errors */
-  if (!validationFailed) {
-    controls.find((control) => {
-      validationFailed = !control(target.value)
-      if (validationFailed) {
+  if (!errorMessage) {
+    Array.from(controls).find(control => {
+      if (!control(target.value)) {
         /* set the input validity['customError'] state true */
         target.setCustomValidity(messages[control.name])
         errorMessage = messages[control.name]
@@ -38,22 +35,53 @@ const checkElementValidity = (target, form) => {
 
   /* dispatch the validation event with the error as detail */
   target.dispatchEvent(new CustomEvent('validation', {
-    detail: { error: validationFailed ? errorMessage : '', validity: form.checkValidity() },
+    detail: { error: errorMessage || '', validity: form.checkValidity() },
     bubbles: true
   }))
-
-  target._x_validity_state = validationFailed ? errorMessage : ''
 }
-
-const handleModifier = (modifier, el, evaluateLater, expression, effect) => {
-  const getControls = evaluateLater(expression)
+/* handles x-validate:messages */
+const handleMessages = (el, expression, evaluateLater, effect) => {
+  const getMessages = evaluateLater(expression)
   effect(() => {
-    getControls(data => {
-      el[`_x_validity_${modifier}`] = data
+    getMessages(data => {
+      el.__messages = data
     })
   })
 }
 
+/* handles x-validate:controls */
+const handleControls = (el, expression, evaluateLater, effect) => {
+  const getControls = evaluateLater(expression)
+  effect(() => {
+    getControls(data => {
+      el.__controls = data
+    })
+  })
+}
+
+const handleElements = (el, Alpine) => Alpine.bind(el, {
+  'x-data' () {
+    return {
+      __modified: false,
+      __blurred: false,
+      get __canCheck () {
+        return this.__modified && this.__blurred
+      }
+    }
+  },
+  'x-init' () {
+    this.$el.__messages = null
+    this.$el.__controls = null
+  },
+  '@input.once' ({ target }) {
+    Alpine.$data(target).__modified = true
+  },
+  '@focusout.once' ({ target }) {
+    Alpine.$data(target).__blurred = true
+  }
+})
+
+/* handles x-validate */
 const handleRoot = (el, Alpine) => {
   const form = el
   const mutations = new MutationObserver(() => {
@@ -65,71 +93,64 @@ const handleRoot = (el, Alpine) => {
   /* watch for childs mutations */
   mutations.observe(form, { childList: true })
 
-  /* disable native validation behavior */
-  form.setAttribute('novalidate', true)
-
-  /* trigger validition logic */
-  const VALIDATION_EVENTS = ['input', 'focusout']
-  VALIDATION_EVENTS.forEach(eventName => form.addEventListener(
-    eventName,
-    ({ target, type }) => {
-      if ((target._x_validity_modified ?? false) && type === 'input') {
-        target._x_validity_modified = true
-      }
-
-      if (!(target._x_validity_blurred ?? false) && type === 'focusout') {
-        target._x_validity_blurred = true
-      }
-
-      if (!target._x_validity_blurred && !target._x_validity_modified) {
-        return false
-      }
-
-      checkElementValidity(target, target.form)
-    }
-  ))
-
-  /* trigger a full validation check */
-  form.addEventListener('submit', () => {
-    Array.from(form.elements)
-      .filter(element => element.willValidate)
-      .forEach(element => {
-        element._x_validity_blurred = true
-        checkElementValidity(element, form)
-      })
-  })
-
   Alpine.bind(form, {
     'x-data' () {
       return {
-        __errors: {}
+        __errors: new Map(),
+        messages: [],
+        get __formElements () {
+          return Array.from(form.elements)
+            .filter(element => element.willValidate)
+        }
       }
     },
+    'x-init' () {
+      this.__formElements.forEach(el => {
+        handleElements(el, Alpine)
+      })
+    },
+    ':novalidate': true,
     '@validation' (ev) {
       const target = ev.target
       if (target.id) {
-        this.__errors = { ...this.__errors, [target.id]: ev.detail.error }
+        this.__errors.set(target.id, ev.detail.error)
+      }
+    },
+    '@submit' () {
+      /* trigger a full validation check */
+      this.__formElements
+        .forEach(element => {
+          Alpine.$data(element).__blurred = true
+          checkElementValidity(element, form)
+        })
+    },
+    '@input' ({ target }) {
+      if (Alpine.$data(target).__canCheck) {
+        checkElementValidity(target, target.form)
+      }
+    },
+    '@focusout' ({ target }) {
+      if (Alpine.$data(target).__canCheck) {
+        checkElementValidity(target, target.form)
       }
     }
   })
 }
 
 export default (Alpine) => {
-  Alpine.directive('validity', (el, { value, expression }, { evaluateLater, effect, cleanup }) => {
-    if (value === 'controls') {
-      /* handles x-validate:controls */
-      handleModifier('controls', el, evaluateLater, expression, effect)
-    } else if (value === 'messages') {
-      /* handles x-validate:messages */
-      handleModifier('messages', el, evaluateLater, expression, effect)
-    } else {
-      /* handles x-validate */
-      handleRoot(el, Alpine)
+  Alpine.directive('validity', (el, { value, expression }, { evaluateLater, effect }) => {
+    switch (value) {
+      case 'messages':
+        handleMessages(el, expression, evaluateLater, effect)
+        break
+      case 'controls':
+        handleControls(el, expression, evaluateLater, effect)
+        break
+      default:
+        handleRoot(el, Alpine)
+        break
     }
   })
 
-  Alpine.magic('validity', (el) => subject => {
-    const $data = Alpine.$data(el)
-    return $data.__errors[subject]
-  })
+  Alpine.magic('validity', (el) => subject => Alpine.$data(el).__errors.get(subject))
 }
