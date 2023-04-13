@@ -1,11 +1,11 @@
 /* global CustomEvent, MutationObserver */
 
-const checkElementValidity = (target, form) => {
+const checkElementValidity = (target) => {
   const validityStates = target.validity
 
   /* retrieve messages and controls from the element or the parent form */
-  const messages = target.__messages || form.__messages || []
-  const controls = target.__controls || form.__controls || []
+  const messages = target.__messages || target.form.__messages || []
+  const controls = target.__controls || target.form.__controls || []
 
   let errorMessage = false
 
@@ -20,11 +20,11 @@ const checkElementValidity = (target, form) => {
     }
   }
 
-  /* then if no native errors found, check for custom errors */
+  /* then check for custom errors */
   if (!errorMessage) {
-    Array.from(controls).find(control => {
+    controls.find(control => {
       if (!control(target.value)) {
-        /* set the input validity['customError'] state true */
+        /* set the input validity['customError'] state to true */
         target.setCustomValidity(messages[control.name])
         errorMessage = messages[control.name]
         return true
@@ -35,11 +35,12 @@ const checkElementValidity = (target, form) => {
 
   /* dispatch the validation event with the error as detail */
   target.dispatchEvent(new CustomEvent('validation', {
-    detail: { error: errorMessage || '', validity: form.checkValidity() },
+    detail: { error: errorMessage || '', validity: target.form.checkValidity() },
     bubbles: true
   }))
 }
-/* handles x-validate:messages */
+
+/* handles x-validate:messages="{control1: "control message 1", control2: "control message 2"}" */
 const handleMessages = (el, expression, evaluateLater, effect) => {
   const getMessages = evaluateLater(expression)
   effect(() => {
@@ -49,7 +50,7 @@ const handleMessages = (el, expression, evaluateLater, effect) => {
   })
 }
 
-/* handles x-validate:controls */
+/* handles x-validate:controls="[control1, control2, ...]" */
 const handleControls = (el, expression, evaluateLater, effect) => {
   const getControls = evaluateLater(expression)
   effect(() => {
@@ -59,7 +60,7 @@ const handleControls = (el, expression, evaluateLater, effect) => {
   })
 }
 
-const handleElements = (el, Alpine) => Alpine.bind(el, {
+const handleElement = (el, Alpine) => Alpine.bind(el, {
   'x-data' () {
     return {
       __modified: false,
@@ -90,23 +91,22 @@ const handleRoot = (el, Alpine) => {
     }))
   })
 
-  /* watch for childs mutations */
-  mutations.observe(form, { childList: true })
-
   Alpine.bind(form, {
     'x-data' () {
       return {
         __errors: new Map(),
         messages: [],
         get __formElements () {
-          return Array.from(form.elements)
+          return Array.from(this.$el.elements)
             .filter(element => element.willValidate)
         }
       }
     },
     'x-init' () {
+      /* watch for childs mutations */
+      mutations.observe(this.$el, { childList: true })
       this.__formElements.forEach(el => {
-        handleElements(el, Alpine)
+        handleElement(el, Alpine)
       })
     },
     ':novalidate': true,
@@ -121,17 +121,17 @@ const handleRoot = (el, Alpine) => {
       this.__formElements
         .forEach(element => {
           Alpine.$data(element).__blurred = true
-          checkElementValidity(element, form)
+          checkElementValidity(element)
         })
     },
     '@input' ({ target }) {
       if (Alpine.$data(target).__canCheck) {
-        checkElementValidity(target, target.form)
+        checkElementValidity(target)
       }
     },
     '@focusout' ({ target }) {
       if (Alpine.$data(target).__canCheck) {
-        checkElementValidity(target, target.form)
+        checkElementValidity(target)
       }
     }
   })
