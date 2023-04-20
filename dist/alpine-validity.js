@@ -1,51 +1,105 @@
-const f = (c) => {
-  const r = (i, e) => {
-    const n = i.validity, s = i._x_validity_messages || e._x_validity_messages || [], _ = i._x_validity_controls || e._x_validity_controls || [];
-    let d = !1, t;
-    i.setCustomValidity("");
-    for (const l in n)
-      if (!["valid", "customError"].includes(l) && n[l] === !0) {
-        d = !0, t = s[l] || i.validationMessage;
-        break;
-      }
-    d || _.find((l) => (d = !l(i.value), d ? (i.setCustomValidity(s[l.name]), t = s[l.name], !0) : !1)), i.dispatchEvent(new CustomEvent("validation", {
-      detail: { error: d ? t : "", validity: e.checkValidity() },
-      bubbles: !0
-    }));
-  }, v = (i, e, n, s, _) => {
-    const d = n(s);
-    _(() => {
-      d((t) => {
-        e[`_x_validity_${i}`] || (e[`_x_validity_${i}`] = {}), e[`_x_validity_${i}`] = t;
-      });
+const o = (t) => {
+  const e = t.validity, i = t.__messages || t.form.__messages || [], s = t.__controls || t.form.__controls || [];
+  let r = !1;
+  t.setCustomValidity("");
+  for (const a in e)
+    if (!["valid", "customError"].includes(a) && e[a] === !0) {
+      r = i[a] || t.validationMessage;
+      break;
+    }
+  r || s.find((a) => a(t.value) ? !1 : (t.setCustomValidity(i[a.name]), r = i[a.name], !0)), t.dispatchEvent(new CustomEvent("validation", {
+    detail: { error: r || "", validity: t.form.checkValidity() },
+    bubbles: !0
+  }));
+}, l = (t, e, i, s) => {
+  const r = i(e);
+  s(() => {
+    r((a) => {
+      t.__messages = a;
     });
-  };
-  c.directive("validity", (i, { value: e, expression: n }, { evaluateLater: s, effect: _, cleanup: d }) => {
-    if (e === "controls")
-      v("controls", i, s, n, _);
-    else if (e === "messages")
-      v("messages", i, s, n, _);
-    else {
-      const t = i;
-      new MutationObserver(() => {
-        t.dispatchEvent(new CustomEvent("validation", {
-          detail: { validity: t.checkValidity() }
-        }));
-      }).observe(t, { childList: !0 }), t.setAttribute("novalidate", !0), ["input", "change"].forEach((o) => t.addEventListener(
-        o,
-        ({ target: a, type: u }) => {
-          if ((a._x_validity_modified ?? !1) && u === "input" && (a._x_validity_modified = !0), !(a._x_validity_blurred ?? !1) && u === "change" && (a._x_validity_blurred = !0), !a._x_validity_blurred && !a._x_validity_modified)
-            return !1;
-          r(a, a.form);
+  });
+}, c = (t, e, i, s) => {
+  const r = i(e);
+  s(() => {
+    r((a) => {
+      t.__controls = a;
+    });
+  });
+}, d = (t, e) => e.bind(t, {
+  "x-data"() {
+    return {
+      __modified: !1,
+      __blurred: !1,
+      get __canCheck() {
+        return this.__modified && this.__blurred;
+      }
+    };
+  },
+  "x-init"() {
+    this.$el.__messages = null, this.$el.__controls = null;
+  },
+  "@input.once"({ target: i }) {
+    e.$data(i).__modified = !0;
+  },
+  "@focusout.once"({ target: i }) {
+    e.$data(i).__blurred = !0;
+  }
+}), _ = (t, e) => {
+  const i = new MutationObserver(([s]) => {
+    const r = Array.from(t.elements).filter(
+      (a) => Array.from(s.addedNodes).filter((n) => n.contains(a)).length && a.tagName !== "BUTTON" && (a.hasAttribute("x-validity:messages") || a.hasAttribute("x-validity:controls"))
+    );
+    r.forEach((a) => d(a, e)), t.dispatchEvent(new CustomEvent("validation", {
+      detail: { validity: t.checkValidity(), appendedControls: r }
+    }));
+  });
+  e.bind(t, {
+    "x-data"() {
+      return {
+        __errors: /* @__PURE__ */ new Map(),
+        messages: [],
+        get __formElements() {
+          return Array.from(this.$el.elements).filter((s) => s.willValidate);
         }
-      )), t.addEventListener("submit", () => {
-        Array.from(t.elements).filter((o) => o.willValidate).forEach((o) => {
-          o._x_validity_blurred = !0, r(o, t);
-        });
+      };
+    },
+    "x-init"() {
+      i.observe(this.$el, { childList: !0 }), this.__formElements.forEach((s) => {
+        d(s, e);
       });
+    },
+    ":novalidate": !0,
+    "@validation"(s) {
+      const r = s.target;
+      r.id && this.__errors.set(r.id, s.detail.error);
+    },
+    "@submit"() {
+      this.__formElements.forEach((s) => {
+        e.$data(s).__blurred = !0, o(s);
+      });
+    },
+    "@input"({ target: s }) {
+      e.$data(s).__canCheck && o(s);
+    },
+    "@focusout"({ target: s }) {
+      e.$data(s).__canCheck && o(s);
     }
   });
+}, u = (t) => {
+  t.directive("validity", (e, { value: i, expression: s }, { evaluateLater: r, effect: a }) => {
+    switch (i) {
+      case "messages":
+        l(e, s, r, a);
+        break;
+      case "controls":
+        c(e, s, r, a);
+        break;
+      default:
+        _(e, t);
+        break;
+    }
+  }), t.magic("validity", (e) => (i) => t.$data(e).__errors.get(i));
 };
 export {
-  f as default
+  u as default
 };

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
   <script type="module">
-    import validityDirective from "./src/validity.js"
+    import validityDirective from "../../../dist/alpine-validity.js"
 
     document.addEventListener("alpine:initializing", () => {
       validityDirective(window.Alpine)
@@ -36,7 +36,7 @@
     }
   </script>
 </head>
-
+<!-- TODO MOVE THIS FILE SOMEWHERE ELSE :D -->
 <body>
   <main class="container">
     <ins id="alpine-loaded" x-data x-text="'alpine-loaded'"></ins>

@@ -1,6 +1,6 @@
 describe('Test validation on dynamic inputs', () => {
   beforeEach(() => {
-    cy.visit('/spec.html')
+    cy.visit('/tests/cypress/e2e/spec.html')
   })
 
   it('displays native validation message on form submit', () => {

@@ -1,6 +1,6 @@
 describe('Test custom validations', () => {
   beforeEach(() => {
-    cy.visit('/spec.html')
+    cy.visit('/tests/cypress/e2e/spec.html')
   })
 
   it('displays custom validation message on form submit', () => {
