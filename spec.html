@@ -46,7 +46,7 @@
         @submit.prevent>
         <div>
           <input type="text" id="test-field" required />
-          <small class="errorMessage" x-text="$validity('test-field')"></small>  
+          <small class="errorMessage" x-text="$validity('test-field')"></small>
         </div>
         <button>submit</button>
       </form>
@@ -72,13 +72,12 @@
           <small class="errorMessage" x-text="$validity('test-field-2')"></small>
         </div>
         <div>
-          <input type="email" id="test-field-3" required x-validity:controls="[{isMoreThan5: 'custom error'}]" />
+          <input type="email" id="test-field-3" required />
           <small class="errorMessage" x-text="$validity('test-field-3')"></small>
         </div>
         <button>submit</button>
       </form>
     </article>
-
     <article>
       <h2>form 4</h2>
       <div x-data="{
@@ -89,18 +88,18 @@
           x-validity id="form-4">
           <template x-for="(form, index) in forms" :key="form.id">
             <div class="grid form-row">
-              <div x-data="{error: ''}" @validation="error = $event.detail.error" class="input-name">
-                <input type="text" required  :name="`name-${form.id}`" :value="form.name"
-                  :placeholder="`Name ${form.id}`" />
-                <small class="errorMessage" x-text="error"></small>
+              <div class="input-name">
+                <input type="text" required :id="`name-${form.id}`" x-validity:messages="customMessages"
+                  :name="`name-${form.id}`" :value="form.name" :placeholder="`Name ${form.id}`" />
+                <small class="errorMessage" x-text="$validity(`name-${form.id}`)"></small>
               </div>
-              <div x-data="{error: ''}" @validation="error = $event.detail.error" class="input-mail">
-                <input type="email" required  :name="`email-${form.id}`" :value="form.email"
-                  :placeholder="`Email ${form.id}`" />
-                <small class="errorMessage" x-text="error"></small>
+              <div class="input-mail">
+                <input type="email" required :id="`email-${form.id}`" x-validity:messages="customMessages"
+                  :name="`email-${form.id}`" :value="form.email" :placeholder="`Email ${form.id}`" />
+                <small class="errorMessage" x-text="$validity(`email-${form.id}`)"></small>
               </div>
               <button type="button" class="secondary" @click="() => remove(form.id)">
-                remove the <strong x-text="form.id"></strong>
+                remove
               </button>
             </div>
           </template>

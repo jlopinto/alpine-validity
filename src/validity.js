@@ -83,11 +83,19 @@ const handleElement = (el, Alpine) => Alpine.bind(el, {
 })
 
 /* handles x-validate */
-const handleRoot = (el, Alpine) => {
-  const form = el
-  const mutations = new MutationObserver(() => {
+const handleRoot = (form, Alpine) => {
+  const mutations = new MutationObserver(([mutation]) => {
+    const appendedControls = Array.from(form.elements).filter((element) =>
+      Array.from(mutation.addedNodes)
+        .filter((addedNode) =>
+          addedNode.contains(element)).length &&
+      element.tagName !== 'BUTTON' &&
+      (element.hasAttribute('x-validity:messages') || element.hasAttribute('x-validity:controls'))
+    )
+    appendedControls.forEach((appendedControl) => handleElement(appendedControl, Alpine))
+
     form.dispatchEvent(new CustomEvent('validation', {
-      detail: { validity: form.checkValidity() }
+      detail: { validity: form.checkValidity(), appendedControls }
     }))
   })
 
