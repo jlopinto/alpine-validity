@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
+  <script type="module">
+    import validityDirective from "./src/validity.js"
+
+    document.addEventListener("alpine:initializing", () => {
+      validityDirective(window.Alpine)
+    })
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+  <script>
+    const isMoreThan5 = (value) => {
+      return value.length > 5
+    }
+
+    const notEmpty = (value) => {
+      return value.length > 0
+    }
+
+    const customMessagesRoot = {
+      isMoreThan5: ">5",
+      notEmpty: ">0",
+      valueMissing: "You forgot to enter your email address! - 1",
+      typeMismatch: "This appears to be an invalid email address. - 1"
+    }
+
+    const customMessages = {
+      isMoreThan5: ">5",
+      notEmpty: ">0",
+      valueMissing: "You forgot to enter your email address!",
+      typeMismatch: "This appears to be an invalid email address."
+    }
+  </script>
+</head>
+
+<body>
+  <main class="container">
+    <article>
+      <form id="form-1" x-validity x-data="{isFormValid: false}" @validation="isFormValid = $el.checkValidity()" @submit.prevent>
+        <div>
+          <label>Some text</label>
+          <input type="text" name="test-field" required />
+          <small class="errorMessage" x-text="$validity('test-field')"></small>
+        </div>
+        <div>
+          <label>Pick one</label>
+          <select name="some-value" required>
+            <option disabled selected value>--- pick one ---</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <small class="errorMessage" x-text="$validity('some-value')"></small>
+        </div>
+        <fieldset>
+          <label><input type="radio" name="radioboxes" required> 1</label>
+          <label><input type="radio" name="radioboxes" required> 2</label>
+          <label><input type="radio" name="radioboxes" required> 3</label>
+          <small class="errorMessage" x-text="$validity('radioboxes')"></small>
+        </fieldset>
+        <fieldset>
+          <label>
+            <input type="checkbox" name="required" required> Check it
+          </label>
+          <small class="errorMessage" x-text="$validity('required')"></small>
+        </fieldset>
+        <div>
+          <label>Some text</label>
+          <textarea name="textarea" required></textarea>
+          <small class="errorMessage" x-text="$validity('textarea')"></small>
+        </div>
+
+        <!-- Search -->
+        <input required type="search" id="search" name="search" placeholder="Search">
+        <small class="errorMessage" x-text="$validity('search')"></small>
+
+        <!-- File browser -->
+        <label for="file">File browser
+          <input required type="file" id="file" name="file">
+          <small class="errorMessage" x-text="$validity('file')"></small>
+        </label>
+        
+
+        <!-- Range slider -->
+        <label for="range">Range slider
+          <input required type="range" min="0" max="100" value="50" id="range" name="range">
+          <small class="errorMessage" x-text="$validity('range')"></small>
+        </label>
+        
+
+        <!-- Date -->
+        <label for="date">Date
+          <input required type="date" id="date" name="date">
+          <small class="errorMessage" x-text="$validity('date')"></small>
+        </label>
+        
+
+        <!-- Time -->
+        <label for="time">Time
+          <input required type="time" id="time" name="time">
+          <small class="errorMessage" x-text="$validity('time')"></small>
+        </label>
+        
+
+        <!-- Color -->
+        <label for="color">Color
+          <input required type="color" id="color" name="color" value="#0eaaaa">
+          <small class="errorMessage" x-text="$validity('color')"></small>
+        </label>
+
+        <div class="grid">
+          <button type="reset">Reset</button>
+          <button x-text="isFormValid ? 'Submit':'There\'s errors :/'"></button>
+        </div>
+      </form>
+    </article>
+  </main>
+</body>
+
+</html>

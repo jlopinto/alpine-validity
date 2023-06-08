@@ -60,6 +60,7 @@ const handleControls = (el, expression, evaluateLater, effect) => {
   })
 }
 
+/* initiate form element */
 const handleElement = (el, Alpine) => Alpine.bind(el, {
   'x-data' () {
     return {
@@ -87,11 +88,11 @@ const handleRoot = (form, Alpine) => {
   const mutations = new MutationObserver(([mutation]) => {
     const appendedControls = Array.from(form.elements).filter((element) =>
       Array.from(mutation.addedNodes)
-        .filter((addedNode) =>
-          addedNode.contains(element)).length &&
-      element.tagName !== 'BUTTON' &&
-      (element.hasAttribute('x-validity:messages') || element.hasAttribute('x-validity:controls'))
+        .filter((addedNode) => {
+          return addedNode.contains(element).length && element.tagName !== 'BUTTON' && (element.hasAttribute('x-validity:messages') || element.hasAttribute('x-validity:controls'))
+        })
     )
+
     appendedControls.forEach((appendedControl) => handleElement(appendedControl, Alpine))
 
     form.dispatchEvent(new CustomEvent('validation', {
@@ -113,15 +114,13 @@ const handleRoot = (form, Alpine) => {
     'x-init' () {
       /* watch for childs mutations */
       mutations.observe(this.$el, { childList: true })
-      this.__formElements.forEach(el => {
-        handleElement(el, Alpine)
-      })
+      this.__formElements.forEach(el => handleElement(el, Alpine))
     },
     ':novalidate': true,
     '@validation' (ev) {
       const target = ev.target
-      if (target.id) {
-        this.__errors.set(target.id, ev.detail.error)
+      if (target.name) {
+        this.__errors.set(target.name, ev.detail.error)
       }
     },
     '@submit' () {
@@ -137,10 +136,14 @@ const handleRoot = (form, Alpine) => {
         checkElementValidity(target)
       }
     },
-    '@focusout' ({ target }) {
-      if (Alpine.$data(target).__canCheck) {
-        checkElementValidity(target)
-      }
+    '@reset' () {
+      this.__errors.clear()
+      this.__formElements
+        .forEach(element => {
+          Alpine.$data(element).__modified = false
+          Alpine.$data(element).__blurred = false
+          element.setCustomValidity('')
+        })
     }
   })
 }
