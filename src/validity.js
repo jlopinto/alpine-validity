@@ -1,41 +1,43 @@
 /* global CustomEvent, MutationObserver */
 
 const checkElementValidity = (target) => {
+  if (!target.name) return
+
   const validityStates = target.validity
 
   /* retrieve messages and controls from the element or the parent form */
   const messages = target.__messages || target.form.__messages || []
   const controls = target.__controls || target.form.__controls || []
 
-  let errorMessage = false
+  let errors = []
 
   /* reset the input validity['customError'] state to false */
   target.setCustomValidity('')
-
+  console.log(target.name)
   /* First, checks for native errors */
   for (const state in validityStates) {
-    if (!['valid', 'customError'].includes(state) && validityStates[state] === true) {
-      errorMessage = messages[state] || target.validationMessage
-      break
+    // console.log(state, validityStates[state])
+    if (validityStates[state] === true) {
+      console.log(messages[state] || target.validationMessage)
+      errors.push({ target, name: state, valid: messages[state], message: messages[state] || target.validationMessage })
     }
   }
 
-  /* then check for custom errors */
-  if (!errorMessage) {
-    controls.find(control => {
-      if (!control(target.value)) {
-        /* set the input validity['customError'] state to true */
-        target.setCustomValidity(messages[control.name])
-        errorMessage = messages[control.name]
-        return true
-      }
-      return false
-    })
-  }
+  console.log(errors)
 
+  /* then check for custom errors */
+  errors = Object.assign(errors, controls.map((control) => {
+    return { target, name: control.name, valid: control(target.value), message: messages[control.name] }
+    // if (!control(target.value)) {
+    //   /* set the input validity['customError'] state to true */
+    //   errorMessage = messages[control.name]
+    //   target.setCustomValidity(errorMessage)
+    // }
+  }))
+  console.log(errors)
   /* dispatch the validation event with the error as detail */
   target.dispatchEvent(new CustomEvent('validation', {
-    detail: { error: errorMessage || '', validity: target.form.checkValidity() },
+    detail: { errors, validity: target.form.checkValidity() },
     bubbles: true
   }))
 }
@@ -120,7 +122,7 @@ const handleRoot = (form, Alpine) => {
     '@validation' (ev) {
       const target = ev.target
       if (target.name) {
-        this.__errors.set(target.name, ev.detail.error)
+        this.__errors.set(target.name, ev.detail.errors)
       }
     },
     '@submit' () {
@@ -163,5 +165,20 @@ export default (Alpine) => {
     }
   })
 
-  Alpine.magic('validity', (el) => subject => Alpine.$data(el).__errors.get(subject))
+  Alpine.magic('validity', (control) => subject => {
+    // Alpine.$data(fieldName).__errors.get(subject)
+    return {
+      get errors () {
+        return Alpine.$data(control).__errors.get(subject)
+      },
+      get firstError () {
+        return Alpine.$data(control).__errors.get(subject)
+      },
+      error (name) {
+        const errors = Alpine.$data(control).__errors.get(subject)
+        console.log(errors)
+        return errors ? errors.find(error => error.name === name) : []
+      }
+    }
+  })
 }

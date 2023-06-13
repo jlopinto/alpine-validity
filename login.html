@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
+  <script type="module">
+    import validityDirective from "./src/validity.js"
+
+    document.addEventListener("alpine:initializing", () => {
+      validityDirective(window.Alpine)
+    })
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+  <script>
+    const isMoreThan5 = (value) => {
+      return value.length > 5
+    }
+
+    const containsNumbers = (value) => {
+      //regex to check if value contains numbers
+      return /\d/.test(value)
+    }
+
+    const containsSpecialCharacters = (value) => {
+      //regex to check if value contains special characters
+      return /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(value)
+    }
+
+    const containsUppercase = (value) => {
+      //regex to check if value contains uppercase letters
+      return /[A-Z]/.test(value)
+    }
+
+    const customControls = [
+      isMoreThan5,
+      containsNumbers,
+      containsSpecialCharacters,
+      containsUppercase
+    ]
+
+    const customMessagesRoot = {
+      isMoreThan5: ">5",
+      containsNumbers: "must contain a number",
+      containsSpecialCharacters: "must contain a special character",
+      containsUppercase: "must contain an uppercase letter",
+      valueMissing: "You forgot to enter your email address! - 1",
+      typeMismatch: "This appears to be an invalid email address. - 1"
+    }
+
+    const customMessages = {
+      isMoreThan5: "should be more than 5 characters",
+      containsNumbers: "must contain a number",
+      containsSpecialCharacters: "must contain a special character",
+      containsUppercase: "must contain an uppercase letter",
+    }
+  </script>
+</head>
+
+<body>
+  <main class="container">
+    <article>
+      <form id="form-1" x-validity x-data="{isFormValid: false}" @validation="isFormValid = $el.checkValidity()"
+        @submit.prevent>
+        <div>
+          <label>Login</label>
+          <input type="email" name="login-field" required />
+          <small class="errorMessage" x-text="$validity('login-field')"></small>
+        </div>
+        <div>
+          <label>Password</label>
+          <input type="password" name="password-field" required x-validity:controls="customControls"
+            x-validity:messages="customMessages" />
+          <!-- <small class="errorMessage" x-text="$validity('password-field').firstError"></small> -->
+          <ul>
+            <template x-for="{message, valid, target} in $validity('password-field').errors">
+              <li><small :style="{'color': valid ? 'green':'red'}" class="errorMessage" x-text="message"></small> <span x-text="valid"></span> <span x-text="target.name"></span></li>
+            </template>
+          </ul>
+          -----------
+          <div :style="{'color': $validity('password-field').error('containsNumbers').valid ? 'green':'red'}">
+            <small class="errorMessage" x-text="$validity('password-field').error('containsNumbers').message"></small>
+            <small class="errorMessage" x-text="$validity('password-field').error('containsNumbers').valid"></small>
+          </div>
+        </div>
+
+        <div class="grid">
+          <button type="reset">Reset</button>
+          <button x-text="isFormValid ? 'Submit':'There\'s errors :/'"></button>
+        </div>
+      </form>
+    </article>
+  </main>
+</body>
+
+</html>

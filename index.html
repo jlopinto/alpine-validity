@@ -76,6 +76,10 @@
         </div>
 
         <!-- Search -->
+        <input required type="password" id="password" name="password" placeholder="A password">
+        <small class="errorMessage" x-text="$validity('password')"></small>
+
+        <!-- Search -->
         <input required type="search" id="search" name="search" placeholder="Search">
         <small class="errorMessage" x-text="$validity('search')"></small>
 
