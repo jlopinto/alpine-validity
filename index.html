@@ -61,7 +61,11 @@
           <label><input type="radio" name="radioboxes" required> 1</label>
           <label><input type="radio" name="radioboxes" required> 2</label>
           <label><input type="radio" name="radioboxes" required> 3</label>
-          <small class="errorMessage" x-text="$validity('radioboxes')"></small>
+          <ul>
+            <template x-for="{message, valid, target} in $validity('radioboxes').errors">
+              <li><small :style="{'color': valid ? 'green':'red'}" class="errorMessage" x-text="message"></small> <span x-text="valid"></span> <span x-text="target.name"></span></li>
+            </template>
+          </ul>
         </fieldset>
         <fieldset>
           <label>

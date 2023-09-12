@@ -42,7 +42,7 @@ const checkElementValidity = (target) => {
   }))
 }
 
-/* handles x-validate:messages="{control1: "control message 1", control2: "control message 2"}" */
+/* handles x-validity:messages="{control1: "control message 1", control2: "control message 2"}" */
 const handleMessages = (el, expression, evaluateLater, effect) => {
   const getMessages = evaluateLater(expression)
   effect(() => {
@@ -52,7 +52,7 @@ const handleMessages = (el, expression, evaluateLater, effect) => {
   })
 }
 
-/* handles x-validate:controls="[control1, control2, ...]" */
+/* handles x-validity:controls="[control1, control2, ...]" */
 const handleControls = (el, expression, evaluateLater, effect) => {
   const getControls = evaluateLater(expression)
   effect(() => {
@@ -85,7 +85,7 @@ const handleElement = (el, Alpine) => Alpine.bind(el, {
   }
 })
 
-/* handles x-validate */
+/* handles x-validity */
 const handleRoot = (form, Alpine) => {
   const mutations = new MutationObserver(([mutation]) => {
     const appendedControls = Array.from(form.elements).filter((element) =>
