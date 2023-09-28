@@ -7,8 +7,29 @@
   <script type="module">
     import validityDirective from "./src/validity.js"
 
+    const customConfig = {
+      'password': {
+        isMoreThan5: {
+          test: () => value.length > 5,
+          message: "should be more than 5 characters",
+        },
+        containsNumbers: {
+          test: () => value.length > 5,
+          message: "should be more than 5 characters",
+        },
+        containsSpecialCharacters: {
+          test: () => value.length > 5,
+          message: "should be more than 5 characters",
+        },
+        containsUppercase: {
+          test: () => value.length > 5,
+          message: "should be more than 5 characters",
+        },
+      }
+    }
+
     document.addEventListener("alpine:initializing", () => {
-      validityDirective(window.Alpine)
+      validityDirective(window.Alpine).configure(customConfig)
     })
   </script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
@@ -70,11 +91,12 @@
         <div>
           <label>Password</label>
           <input type="password" name="password-field" required x-validity:controls="customControls"
-            x-validity:messages="customMessages" />
+            x-validity:messages="customMessages" _x-validity:constrols="passwordControls" />
           <!-- <small class="errorMessage" x-text="$validity('password-field').firstError"></small> -->
           <ul>
             <template x-for="{message, valid, target} in $validity('password-field').errors">
-              <li><small :style="{'color': valid ? 'green':'red'}" class="errorMessage" x-text="message"></small> <span x-text="valid"></span> <span x-text="target.name"></span></li>
+              <li><small :style="{'color': valid ? 'green':'red'}" class="errorMessage" x-text="message"></small> <span
+                  x-text="valid"></span> <span x-text="target.name"></span></li>
             </template>
           </ul>
           -----------

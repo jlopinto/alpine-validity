@@ -41,5 +41,10 @@
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "vite": "4.1.1"
+  },
+  "standard": {
+    "env": [
+      "browser"
+    ]
   }
 }

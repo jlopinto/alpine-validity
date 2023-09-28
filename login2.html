@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.6/pico.min.css" />
+  <script type="module">
+    import validityDirective from "./src/validity.js"
+
+    const globalConfig = {
+      'password': {
+        valueMissing: {
+          message: "should not be empty !!!",
+        },
+        isMoreThan5: {
+          validationTest: (value) => value.length > 5,
+          message: "should be more than 5 characters",
+        }
+      },
+    }
+    const formConfig = {
+      isMoreThan8: {
+        validationTest: (value) => value.length > 8,
+        message: "should be more than 8 characters (from form config)",
+      }
+    }
+
+    const elementConfig = {
+      isMoreThan10: {
+        validationTest: (value) => value.length > 10,
+        message: "should be more than 10 characters (from element config)",
+      }
+    }
+
+    document.addEventListener("alpine:initializing", () => {
+      validityDirective(window.Alpine, globalConfig)
+    })
+
+    window.elementConfig = elementConfig
+    window.formConfig = formConfig
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js" defer></script>
+</head>
+
+<body>
+  <main class="container">
+    <article>
+      <form id="form-1" x-validity="formConfig" x-data="{isFormValid: false}"
+        @validation="isFormValid = $el.checkValidity()" @submit.prevent>
+        <label>Password</label>
+        <input type="password" name="password-field" x-validity:controls="elementConfig" required />
+        <div>
+          <ul>
+            <template x-for="{message, valid, target} in $validity('password-field')">
+              <li><small :style="{'color': valid ? 'green':'red'}" class="errorMessage" x-text="message"></small> <span
+                  x-text="valid"></span> <span x-text="target.name"></span></li>
+            </template>
+          </ul>
+        </div>
+
+        <div class="grid">
+          <button type="reset">Reset</button>
+          <button x-text="isFormValid ? 'Submit':'There\'s errors :/'"></button>
+        </div>
+      </form>
+    </article>
+  </main>
+</body>
+
+</html>
